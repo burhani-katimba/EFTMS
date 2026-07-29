@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="flex h-screen flex-col">
+    <header class="flex h-14 shrink-0 items-center justify-between border-b border-[#e0e0e0] bg-white px-4 md:px-6">
+        <div class="flex items-center gap-3">
+            <i data-lucide="building-2" class="h-5 w-5 text-[#0067c0]"></i>
+            <span class="text-sm font-semibold text-black">Admin Panel</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-sm text-[#5c5c5c]">{{ user.get_full_name|default:user.username }}</span>
+            <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="rounded-md border border-[#c8c8c8] bg-white px-3 py-1.5 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]" type="submit">Log out</button></form>
+        </div>
+    </header>
+    <div class="flex min-h-0 flex-1">
+        {% include "partials/admin_sidebar.html" %}
+        <section class="min-w-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 lg:px-8">
+            <h1 class="mb-6 text-2xl font-semibold text-black">System Dashboard</h1>
+
+            <div class="mb-4 grid gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">Total</p><p class="mt-2 text-2xl font-semibold text-black">{{ total }}</p></div>
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">At Dept</p><p class="mt-2 text-2xl font-semibold text-[#c43e1c]">{{ pending_dept }}</p></div>
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">Under Review</p><p class="mt-2 text-2xl font-semibold text-[#0067c0]">{{ under_review }}</p></div>
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">Awaiting Director</p><p class="mt-2 text-2xl font-semibold text-[#92400e]">{{ pending_director }}</p></div>
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">Approved</p><p class="mt-2 text-2xl font-semibold text-[#107c41]">{{ approved }}</p></div>
+                <div class="rounded-xl border border-[#e0e0e0] bg-white p-4 shadow-sm"><p class="text-xs font-semibold text-[#5c5c5c]">Collected</p><p class="mt-2 text-2xl font-semibold text-[#5c5c5c]">{{ collected }}</p></div>
+            </div>
+
+            <div class="mb-7 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-xl border border-[#7c3aed] bg-[#f5f3ff] p-4 shadow-sm"><p class="text-xs font-semibold text-[#7c3aed]">Users</p><p class="mt-2 text-2xl font-semibold text-[#7c3aed]">{{ user_count }}</p></div>
+                <div class="rounded-xl border border-[#dc2626] bg-[#fef2f2] p-4 shadow-sm"><p class="text-xs font-semibold text-[#dc2626]">Failed Notifications</p><p class="mt-2 text-2xl font-semibold text-[#dc2626]">{{ failed_notifs }}</p></div>
+                <div class="rounded-xl border border-[#0891b2] bg-[#ecfeff] p-4 shadow-sm"><p class="text-xs font-semibold text-[#0891b2]">Media Storage (MB)</p><p class="mt-2 text-2xl font-semibold text-[#0891b2]">{{ media_size_mb }}</p></div>
+            </div>
+
+            <div class="mb-7 grid gap-4 lg:grid-cols-3">
+                <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                    <div class="border-b border-[#ededed] px-5 py-4"><h2 class="font-semibold text-black">Document Status</h2></div>
+                    <div class="p-4"><canvas id="statusChart" height="200"></canvas></div>
+                </section>
+                <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                    <div class="border-b border-[#ededed] px-5 py-4"><h2 class="font-semibold text-black">Department Load</h2></div>
+                    <div class="p-4"><canvas id="deptPieChart" height="200"></canvas></div>
+                </section>
+                <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                    <div class="border-b border-[#ededed] px-5 py-4"><h2 class="font-semibold text-black">Dept Performance</h2></div>
+                    <div class="p-4"><canvas id="deptBarChart" height="200"></canvas></div>
+                </section>
+            </div>
+
+            <div class="mb-7 grid gap-4 lg:grid-cols-2">
+                <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                    <div class="border-b border-[#ededed] px-5 py-4"><h2 class="font-semibold text-black">Department Summary</h2></div>
+                    <div class="p-5">
+                        <table class="w-full text-left text-sm">
+                            <thead><tr class="text-[#424242]"><th class="pb-2 font-semibold">Department</th><th class="pb-2 font-semibold">Total</th><th class="pb-2 font-semibold">Pending</th></tr></thead>
+                            <tbody class="divide-y divide-[#ededed]">
+                                {% for dept in dept_stats %}
+                                <tr><td class="py-2 font-medium text-black">{{ dept.name }}</td><td class="py-2">{{ dept.total_docs }}</td><td class="py-2">{{ dept.pending_docs }}</td></tr>
+                                {% empty %}<tr><td class="py-4 text-center text-[#a0a0a0]" colspan="3">No data</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                    <div class="flex items-center justify-between border-b border-[#ededed] px-5 py-4">
+                        <h2 class="font-semibold text-black">Recent Notifications</h2>
+                        <a class="text-xs font-semibold text-[#0067c0] hover:underline" href="{% url 'admin_list_notifications' %}">View all</a>
+                    </div>
+                    <div class="p-5">
+                        <div class="space-y-2">
+                            {% for n in recent_notifs %}
+                            <div class="flex items-start gap-2 text-sm">
+                                <span class="text-xs {% if n.is_sent %}text-[#107c41]{% else %}text-[#c43e1c]{% endif %}">●</span>
+                                <div><p class="text-[#5c5c5c]">{{ n.subject|truncatechars:50 }}</p><p class="text-xs text-[#a0a0a0]">{{ n.created_at|date:"d M Y H:i" }}</p></div>
+                            </div>
+                            {% empty %}<p class="text-sm text-[#a0a0a0]">No notifications.</p>{% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-[#ededed] px-5 py-4">
+                    <h2 class="font-semibold text-black">Recent Activity Log</h2>
+                    <a class="text-xs font-semibold text-[#0067c0] hover:underline" href="{% url 'admin_list_logs' %}">View all</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b border-[#ededed] text-[#424242]">
+                            <tr><th class="px-6 py-3 font-semibold">Document</th><th class="px-6 py-3 font-semibold">From</th><th class="px-6 py-3 font-semibold">To</th><th class="px-6 py-3 font-semibold">By</th><th class="px-6 py-3 font-semibold">When</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ededed]">
+                            {% for log in recent_logs %}
+                            <tr class="hover:bg-[#fafafa]">
+                                <td class="px-6 py-3 font-mono text-xs">{{ log.document.document_id }}</td>
+                                <td class="px-6 py-3"><span class="rounded bg-[#f3f4f6] px-2 py-0.5 text-xs">{{ log.from_status|default:"-"|status_label }}</span></td>
+                                <td class="px-6 py-3"><span class="rounded px-2 py-0.5 text-xs font-semibold {{ log.to_status|status_color }}">{{ log.to_status|status_label }}</span></td>
+                                <td class="px-6 py-3 text-[#424242]">{{ log.changed_by.get_full_name|default:log.changed_by.username|default:"-" }}</td>
+                                <td class="px-6 py-3 text-xs text-[#a0a0a0]">{{ log.created_at|date:"d M Y H:i" }}</td>
+                            </tr>
+                            {% empty %}<tr><td class="px-6 py-8 text-center text-[#a0a0a0]" colspan="5">No activity yet.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(function() {
+    function r(h, s, l) { return 'hsla(' + h + ',' + s + '%,' + l + '%)'; }
+    var h = 207;
+    var statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['At Dept', 'Under Review', 'Awaiting Director', 'Approved', 'Ready', 'Collected'],
+                datasets: [{
+                    label: 'Documents',
+                    data: [{{ pending_dept }}, {{ under_review }}, {{ pending_director }}, {{ approved }}, {{ ready }}, {{ collected }}],
+                    backgroundColor: [r(h,70,55), r(h,75,48), r(30,65,48), r(145,55,42), r(h,60,42), r(0,0,55)],
+                    borderRadius: 4,
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e8e8e8' } }, x: { grid: { display: false } } } }
+        });
+    }
+    var pieCtx = document.getElementById('deptPieChart');
+    if (pieCtx) {
+        var deptNames = [{% for d in dept_stats %}'{{ d.name|escapejs }}',{% endfor %}];
+        var deptTotals = [{% for d in dept_stats %}{{ d.total_docs }},{% endfor %}];
+        var colors = [r(207,70,52), r(160,55,48), r(30,65,50), r(270,50,52), r(350,60,50), r(190,60,45)];
+        if (deptTotals.reduce(function(a,b){return a+b},0) > 0) {
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: { labels: deptNames, datasets: [{ data: deptTotals, backgroundColor: colors, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } } } }
+            });
+        }
+    }
+    var barCtx = document.getElementById('deptBarChart');
+    if (barCtx) {
+        var dNames = [{% for d in dept_stats %}'{{ d.name|escapejs }}',{% endfor %}];
+        var dTotals = [{% for d in dept_stats %}{{ d.total_docs }},{% endfor %}];
+        var dPending = [{% for d in dept_stats %}{{ d.pending_docs }},{% endfor %}];
+        if (dTotals.reduce(function(a,b){return a+b},0) > 0) {
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: dNames,
+                    datasets: [
+                        { label: 'Total', data: dTotals, backgroundColor: r(207,70,52), borderRadius: 3 },
+                        { label: 'Pending', data: dPending, backgroundColor: r(30,65,50), borderRadius: 3 },
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 9 } } } }, scales: { y: { beginAtZero: true, grid: { color: '#e8e8e8' } }, x: { grid: { display: false } } } }
+            });
+        }
+    }
+})();
+</script>
+{% endblock %}

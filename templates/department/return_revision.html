@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-8">
+    <a href="{% url 'department_document_detail' pk=doc.pk %}" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0067c0] hover:underline">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i> Back
+    </a>
+    <div class="rounded-xl border border-[#e7e7e7] bg-white p-6 shadow-sm">
+        <div class="mb-6">
+            <p class="text-sm font-semibold text-[#0067c0]">{{ doc.document_id }}</p>
+            <h1 class="mt-1 text-xl font-semibold text-black">Return Document for Revision</h1>
+            <p class="text-sm text-[#5c5c5c]">{{ doc.title }}</p>
+        </div>
+
+        <div class="mb-6 rounded-lg border border-[#e0e0e0] bg-[#fafafa] p-4">
+            <h3 class="mb-2 text-sm font-semibold text-[#424242]">Document Summary</h3>
+            <dl class="grid gap-2 text-sm sm:grid-cols-2">
+                <div><dt class="text-[#5c5c5c]">Applicant</dt><dd class="font-medium">{{ doc.applicant_name }}</dd></div>
+                <div><dt class="text-[#5c5c5c]">Department</dt><dd class="font-medium">{{ doc.department.name }}</dd></div>
+                <div><dt class="text-[#5c5c5c]">Priority</dt><dd class="font-medium">{{ doc.get_priority_display }}</dd></div>
+                <div><dt class="text-[#5c5c5c]">Current Status</dt><dd><span class="rounded-full px-3 py-0.5 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span></dd></div>
+            </dl>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="comment">Reason for Revision</label>
+                <p class="mb-1 text-xs text-[#5c5c5c]">Explain why this document needs to be sent back for revision.</p>
+                <textarea name="comment" id="comment" rows="3" class="w-full rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Describe what needs to be corrected or revised..." required></textarea>
+            </div>
+            <div class="flex items-center gap-3 pt-2">
+                <button class="rounded-md bg-[#c43e1c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#a83218]" type="submit">
+                    <i data-lucide="rotate-ccw" class="inline h-4 w-4"></i> Return for Revision
+                </button>
+                <a class="rounded-md border border-[#c8c8c8] bg-white px-4 py-2 text-sm font-semibold text-[#424242] hover:bg-[#f7f7f7]" href="{% url 'department_document_detail' pk=doc.pk %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

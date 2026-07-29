@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block content %}
+<div class="flex min-h-screen items-center justify-center bg-[#f7f7f7] px-4">
+    <div class="w-full max-w-2xl">
+        <div class="mb-6 text-center">
+            <i data-lucide="shield-check" class="mx-auto h-10 w-10 text-[#0067c0]"></i>
+            <h1 class="mt-3 text-2xl font-semibold text-black">Document Verification</h1>
+            <p class="mt-1 text-sm text-[#5c5c5c]">Verify the authenticity and integrity of municipal documents</p>
+        </div>
+
+        <div class="rounded-xl border border-[#e7e7e7] bg-white p-6 shadow-sm">
+            <div class="mb-5 flex items-center justify-between border-b border-[#ededed] pb-4">
+                <div>
+                    <p class="text-xs font-semibold text-[#5c5c5c]">Document ID</p>
+                    <p class="text-lg font-semibold text-black">{{ doc.document_id }}</p>
+                </div>
+                <span class="rounded-full px-4 py-1.5 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span>
+            </div>
+
+            <dl class="mb-5 space-y-3 text-sm">
+                <div class="flex justify-between"><dt class="text-[#5c5c5c]">Title</dt><dd class="font-semibold text-black">{{ doc.title }}</dd></div>
+                <div class="flex justify-between"><dt class="text-[#5c5c5c]">Applicant</dt><dd class="text-black">{{ doc.applicant_name }}</dd></div>
+                <div class="flex justify-between"><dt class="text-[#5c5c5c]">Department</dt><dd class="text-black">{{ doc.department.name|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-[#5c5c5c]">Submitted</dt><dd class="text-black">{{ doc.submitted_at|date:"d M Y H:i"|default:"—" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-[#5c5c5c]">Registered</dt><dd class="text-black">{{ doc.registered_at|date:"d M Y H:i"|default:"—" }}</dd></div>
+            </dl>
+
+            {% if result %}
+            <div class="mb-5 rounded-lg p-4 {% if result.valid %}bg-[#ecfdf3] border border-[#a7f3d0]{% else %}bg-[#fef2f2] border border-[#fecaca]{% endif %}">
+                <div class="flex items-start gap-3">
+                    {% if result.valid %}
+                    <i data-lucide="check-circle" class="mt-0.5 h-5 w-5 shrink-0 text-[#107c41]"></i>
+                    {% else %}
+                    <i data-lucide="x-circle" class="mt-0.5 h-5 w-5 shrink-0 text-[#dc2626]"></i>
+                    {% endif %}
+                    <div>
+                        <p class="font-semibold {% if result.valid %}text-[#107c41]{% else %}text-[#dc2626]{% endif %}">
+                            {% if result.valid %}✓ Integrity Verified{% else %}✗ Integrity Breach Detected{% endif %}
+                        </p>
+                        <p class="mt-0.5 text-xs {% if result.valid %}text-[#5c5c5c]{% else %}text-[#dc2626]{% endif %}">{{ result.message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="mb-5 rounded-lg border border-[#fde68a] bg-[#fffbeb] p-4">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="alert-triangle" class="mt-0.5 h-5 w-5 shrink-0 text-[#d97706]"></i>
+                    <div>
+                        <p class="font-semibold text-[#92400e]">No Digital Signature</p>
+                        <p class="mt-0.5 text-xs text-[#92400e]">This document has not been digitally signed yet.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if digital_signature %}
+            <div class="rounded-lg bg-[#f9fafb] p-4">
+                <p class="mb-2 text-xs font-semibold text-[#5c5c5c]">Digital Signature Details</p>
+                <dl class="space-y-1.5 text-xs">
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">Algorithm</dt><dd class="font-mono text-black">{{ digital_signature.algorithm }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">SHA-256 Hash</dt><dd class="font-mono text-black">{{ digital_signature.document_hash|truncatechars:32 }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">Signed By</dt><dd class="text-black">{{ digital_signature.signed_by.get_full_name|default:digital_signature.signed_by.username }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">Signed At</dt><dd class="text-black">{{ digital_signature.signed_at|date:"d M Y H:i:s" }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">Cert. Fingerprint</dt><dd class="font-mono text-black">{{ digital_signature.certificate_fingerprint|truncatechars:32 }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[#5c5c5c]">Last Verified</dt><dd class="text-black">{{ digital_signature.verified_at|date:"d M Y H:i:s"|default:"Never" }}</dd></div>
+                </dl>
+            </div>
+            {% endif %}
+
+            {% if doc.certified_file %}
+            <div class="mt-5 text-center">
+                <a href="{{ doc.certified_file.url }}" target="_blank" class="inline-flex items-center gap-2 rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]">
+                    <i data-lucide="file-text" class="h-4 w-4"></i> Download Certified PDF
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="get" class="mt-6">
+            <div class="flex items-center gap-2">
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Enter Document ID (e.g. MCD-2026-0001)" class="flex-1 rounded-md border border-[#c8c8c8] px-3 py-2 text-sm focus:border-[#0067c0] focus:outline-none">
+                <button type="submit" class="rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" formaction="{% url 'verify_lookup' %}">Verify</button>
+            </div>
+        </form>
+
+        <p class="mt-4 text-center text-xs text-[#a0a0a0]">
+            <i data-lucide="info" class="inline h-3 w-3"></i>
+            This verification page confirms the document's authenticity using SHA-256 hashing and RSA-PSS digital signatures.
+        </p>
+    </div>
+</div>
+{% endblock %}

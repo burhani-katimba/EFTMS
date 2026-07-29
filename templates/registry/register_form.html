@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 py-8">
+    <a href="{% url 'registry_dashboard' %}" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0067c0] hover:underline">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to dashboard
+    </a>
+    <div class="rounded-xl border border-[#e7e7e7] bg-white p-6 shadow-sm">
+        <h1 class="mb-2 text-xl font-semibold text-black">Register New Document</h1>
+        <p class="mb-6 text-sm text-[#5c5c5c]">Enter document details. For physical submissions, scan the document and upload as PDF.</p>
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_applicant_name">Applicant Name</label>
+                    {{ form.applicant_name }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_applicant_email">Email</label>
+                    {{ form.applicant_email }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_applicant_phone">Phone</label>
+                    {{ form.applicant_phone }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_priority">Priority</label>
+                    {{ form.priority }}
+                </div>
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_title">Document Title</label>
+                {{ form.title }}
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_description">Description</label>
+                {{ form.description }}
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_department">Department</label>
+                    {{ form.department }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_category">Category</label>
+                    {{ form.category }}
+                </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_submission_type">Submission Type</label>
+                    {{ form.submission_type }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_uploaded_file">Scanned File (PDF)</label>
+                    {{ form.uploaded_file }}
+                </div>
+            </div>
+            <div class="flex items-center gap-3 pt-4">
+                <button class="rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" type="submit">Register</button>
+                <a class="rounded-md border border-[#c8c8c8] bg-white px-4 py-2 text-sm font-semibold text-[#424242] hover:bg-[#f7f7f7]" href="{% url 'registry_dashboard' %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

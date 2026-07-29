@@ -1,0 +1,20 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="flex items-center justify-between border-t border-[#ededed] px-6 py-3">
+    <p class="text-xs text-[#a0a0a0]">{{ page_obj.paginator.count }} total — page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    <div class="flex items-center gap-1.5">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if filter_params %}&{{ filter_params }}{% endif %}" class="rounded border border-[#c8c8c8] px-2.5 py-1 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]">««</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if filter_params %}&{{ filter_params }}{% endif %}" class="rounded border border-[#c8c8c8] px-2.5 py-1 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]">«</a>
+        {% endif %}
+        {% for n in page_obj.paginator.page_range %}
+            {% if n > page_obj.number|add:"-3" and n < page_obj.number|add:"3" %}
+            <a href="?page={{ n }}{% if filter_params %}&{{ filter_params }}{% endif %}" class="rounded border px-2.5 py-1 text-xs font-semibold {% if n == page_obj.number %}border-[#0067c0] bg-[#0067c0] text-white{% else %}border-[#c8c8c8] text-[#424242] hover:bg-[#f7f7f7]{% endif %}">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if filter_params %}&{{ filter_params }}{% endif %}" class="rounded border border-[#c8c8c8] px-2.5 py-1 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]">»</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if filter_params %}&{{ filter_params }}{% endif %}" class="rounded border border-[#c8c8c8] px-2.5 py-1 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]">»»</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

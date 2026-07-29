@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-2xl px-4 py-8">
+    <a href="{% url 'user_dashboard' %}" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0067c0] hover:underline">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to my files
+    </a>
+    <div class="rounded-xl border border-[#e7e7e7] bg-white p-6 shadow-sm">
+        <h1 class="mb-2 text-xl font-semibold text-black">Submit Document</h1>
+        <p class="mb-6 text-sm text-[#5c5c5c]">Upload a digital document for processing. After submission, the Registry will review and forward it to the appropriate department.</p>
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_title">Document Title</label>
+                {{ form.title }}
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_description">Description</label>
+                {{ form.description }}
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_department">Department</label>
+                    {{ form.department }}
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_category">Category</label>
+                    {{ form.category }}
+                </div>
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-[#424242]" for="id_uploaded_file">Upload File</label>
+                {{ form.uploaded_file }}
+                <p class="mt-0.5 text-xs text-[#5c5c5c]">Upload the document (PDF, Word, or image files).</p>
+            </div>
+            <div class="flex items-center gap-3 pt-2">
+                <button class="rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" type="submit">
+                    <i data-lucide="upload" class="inline h-4 w-4"></i> Submit
+                </button>
+                <a class="rounded-md border border-[#c8c8c8] bg-white px-4 py-2 text-sm font-semibold text-[#424242] hover:bg-[#f7f7f7]" href="{% url 'user_dashboard' %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

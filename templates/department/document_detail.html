@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 py-8">
+    <a href="{% url 'department_dashboard' %}" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0067c0] hover:underline">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i> Back
+    </a>
+
+    <div class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+        <div class="border-b border-[#ededed] px-6 py-4">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-[#0067c0]">{{ doc.document_id }}</p>
+                    <h1 class="mt-1 text-xl font-semibold text-black">{{ doc.title }}</h1>
+                    <p class="text-xs text-[#5c5c5c]">Holder: <span class="font-semibold">{{ doc.current_holder }}</span></p>
+                </div>
+                <span class="rounded-full px-4 py-1.5 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <dl class="mb-6 grid gap-4 sm:grid-cols-2">
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Applicant</dt><dd class="font-medium text-black">{{ doc.applicant_name }}</dd></div>
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Email</dt><dd class="font-medium text-black">{{ doc.applicant_email }}</dd></div>
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Department</dt><dd class="font-medium text-black">{{ doc.department.name }}</dd></div>
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Category</dt><dd class="font-medium text-black">{{ doc.category.name|default:"-" }}</dd></div>
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Submission</dt><dd class="font-medium text-black">{{ doc.get_submission_type_display }}</dd></div>
+                <div><dt class="text-xs font-semibold text-[#5c5c5c]">Priority</dt><dd class="font-medium text-black">{{ doc.get_priority_display }}</dd></div>
+            </dl>
+
+            {% if doc.description %}
+            <div class="mb-6"><h3 class="mb-1 text-sm font-semibold text-[#424242]">Description</h3><p class="text-sm text-[#5c5c5c]">{{ doc.description }}</p></div>
+            {% endif %}
+
+            {% if doc.uploaded_file %}
+            <div class="mb-6">
+                <h3 class="mb-2 text-sm font-semibold text-[#424242]">Document File</h3>
+                <a href="{{ doc.uploaded_file.url }}" target="_blank" class="inline-flex items-center gap-2 rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]">
+                    <i data-lucide="external-link" class="h-4 w-4"></i> Open PDF in new tab
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="mb-6 border-t border-[#ededed] pt-4">
+                <h3 class="mb-3 text-sm font-semibold text-[#424242]">Comments & Notes</h3>
+                {% for comment in doc.comments.all %}
+                <div class="mb-3 rounded-lg border border-[#ededed] bg-[#fafafa] p-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-[#0067c0]">{{ comment.user.get_full_name|default:comment.user.username }}</span>
+                        <span class="text-xs text-[#a0a0a0]">{{ comment.created_at|date:"d M Y H:i" }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-[#5c5c5c]">{{ comment.comment }}</p>
+                    {% if comment.file %}<a class="mt-1 inline-flex items-center gap-1 text-xs text-[#0067c0] hover:underline" href="{{ comment.file.url }}"><i data-lucide="paperclip" class="h-3 w-3"></i> Attachment</a>{% endif %}
+                </div>
+                {% empty %}<p class="text-sm text-[#a0a0a0]">No comments yet.</p>{% endfor %}
+            </div>
+
+            {% if doc.status == "under_dept_review" or doc.status == "forwarded_to_dept" %}
+            <div class="border-t border-[#ededed] pt-4">
+                <h3 class="mb-3 text-sm font-semibold text-[#424242]">Add Comment</h3>
+                <form method="post" enctype="multipart/form-data" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="comment">
+                    <textarea name="comment" rows="3" class="w-full rounded-md border border-[#c8c8c8] px-3 py-2 text-sm focus:border-[#0067c0] focus:outline-none" placeholder="Add your comment..."></textarea>
+                    <div class="flex items-center gap-3">
+                        <label class="cursor-pointer rounded border border-[#c8c8c8] bg-white px-3 py-1.5 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]">
+                            <i data-lucide="paperclip" class="inline h-3 w-3"></i> Attach File
+                            <input type="file" name="file" class="hidden">
+                        </label>
+                        <button class="rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

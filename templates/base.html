@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" style="font-size:80%">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Municipal Council DMS{% endblock %}</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}bg-[#f7f7f7] text-[#1f1f1f] antialiased{% endblock %}">
+    {% block header %}{% endblock %}
+    {% if messages %}
+    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+        {% for message in messages %}
+        <div class="rounded-lg border px-4 py-3 text-sm font-medium shadow-lg {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% elif message.tags == 'warning' %}border-yellow-200 bg-yellow-50 text-yellow-700{% else %}border-green-200 bg-green-50 text-green-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <main class="{% block main_class %}min-h-screen bg-[#f7f7f7]{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+    <script>lucide.createIcons();</script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

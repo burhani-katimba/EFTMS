@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block body_class %}bg-[#f7f7f7] text-[#1f1f1f] antialiased{% endblock %}
+{% block main_class %}min-h-screen flex items-center justify-center bg-[#f7f7f7]{% endblock %}
+{% block content %}
+<div class="w-full max-w-sm rounded-xl border border-[#e0e0e0] bg-white p-8 shadow-sm">
+    <div class="mb-6 text-center">
+        <i data-lucide="building-2" class="mx-auto h-10 w-10 text-[#0067c0]"></i>
+        <h1 class="mt-3 text-xl font-semibold text-black">Municipal Council DMS</h1>
+        <p class="mt-1 text-sm text-[#5c5c5c]">Sign in to your account</p>
+    </div>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="mb-1 block text-sm font-medium text-[#424242]" for="username">Username</label>
+            <input class="w-full rounded-md border border-[#c8c8c8] px-3 py-2 text-sm focus:border-[#0067c0] focus:outline-none" type="text" name="username" id="username" required>
+        </div>
+        <div>
+            <label class="mb-1 block text-sm font-medium text-[#424242]" for="password">Password</label>
+            <input class="w-full rounded-md border border-[#c8c8c8] px-3 py-2 text-sm focus:border-[#0067c0] focus:outline-none" type="password" name="password" id="password" required>
+        </div>
+        <button class="w-full rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" type="submit">Sign In</button>
+    </form>
+</div>
+{% endblock %}

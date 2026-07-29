@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block content %}
+<div class="flex h-screen flex-col">
+    {% include "partials/registry_header.html" %}
+    <div class="flex min-h-0 flex-1">
+        {% include "partials/registry_sidebar.html" %}
+        <section class="min-w-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 lg:px-8">
+            <div class="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-[#0067c0]">Registry Office</p>
+                    <h1 class="mt-1 text-2xl font-semibold text-black">Document Management</h1>
+                </div>
+                <a class="inline-flex items-center gap-2 rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]" href="{% url 'registry_register' %}">
+                    <i data-lucide="plus" class="h-4 w-4"></i> Register Document
+                </a>
+            </div>
+
+            <div class="mb-5 grid gap-3 sm:grid-cols-5">
+                <div class="rounded-xl bg-[#0067c0] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-blue-200">Total Registered</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ total }}</p>
+                </div>
+                <div class="rounded-xl bg-[#ea580c] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-orange-200">Pending Softcopies</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ pending_softcopy_count }}</p>
+                </div>
+                <div class="rounded-xl bg-[#0067c0] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-blue-200">With Department</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ with_dept }}</p>
+                </div>
+                <div class="rounded-xl bg-[#107c41] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-green-200">Ready for Collection</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ ready }}</p>
+                </div>
+                <div class="rounded-xl bg-[#107c41] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-green-200">Collected</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ collected }}</p>
+                </div>
+            </div>
+
+            <div class="mb-5 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-xl bg-[#1d4ed8] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-blue-200">Registered Today</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ today_registered }}</p>
+                </div>
+                <div class="rounded-xl bg-[#15803d] p-5 shadow-sm">
+                    <p class="text-xs font-semibold text-green-200">Forwarded Today</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ today_forwarded }}</p>
+                </div>
+            </div>
+
+            {% if pending_softcopies and not request.GET.view or request.GET.view == 'pending' %}
+            <section class="mb-7 overflow-hidden rounded-xl border border-[#fed7aa] bg-white shadow-sm">
+                <div class="border-b border-[#fed7aa] bg-orange-50 px-5 py-4">
+                    <h2 class="font-semibold text-[#9a3412]">Pending Softcopy Submissions</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[900px] text-left text-sm">
+                        <thead class="border-b border-[#ededed] text-[#424242]">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">Doc ID</th>
+                                <th class="px-6 py-4 font-semibold">Applicant</th>
+                                <th class="px-6 py-4 font-semibold">Title</th>
+                                <th class="px-6 py-4 font-semibold">Submitted</th>
+                                <th class="px-6 py-4 font-semibold">Status</th>
+                                <th class="px-6 py-4 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ededed]">
+                            {% for doc in pending_softcopies %}
+                            <tr class="hover:bg-[#fafafa]">
+                                <td class="px-6 py-4 font-mono text-xs font-semibold">{{ doc.document_id }}</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-semibold text-black">{{ doc.applicant_name }}</p>
+                                    <p class="text-xs text-[#5c5c5c]">{{ doc.applicant_email }}</p>
+                                </td>
+                                <td class="px-6 py-4"><a class="font-semibold text-black hover:text-[#0067c0]" href="{% url 'registry_document_detail' doc.id %}">{{ doc.title|truncatechars:40 }}</a></td>
+                                <td class="px-6 py-4 text-xs text-[#5c5c5c]">{{ doc.submitted_at|date:"d M Y" }}</td>
+                                <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span></td>
+                                <td class="px-6 py-4">
+                                    <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#c43e1c] hover:bg-[#f7f7f7]" href="{% url 'registry_review' doc.id %}">Review</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if not request.GET.view or request.GET.view == 'registered' or request.GET.view == 'forwarded' or request.GET.view == 'ready' %}
+            <section class="overflow-hidden rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-[#ededed] px-5 py-4">
+                    <h2 class="font-semibold text-black">
+                        {% if request.GET.view == 'registered' %}Registered Documents
+                        {% elif request.GET.view == 'forwarded' %}Forwarded Documents
+                        {% elif request.GET.view == 'ready' %}Ready / Collected
+                        {% else %}Recently Registered
+                        {% endif %}
+                    </h2>
+                    <a class="text-xs font-semibold text-[#0067c0] hover:underline" href="{% url 'registry_all_documents' %}">View all</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[900px] text-left text-sm">
+                        <thead class="border-b border-[#ededed] text-[#424242]">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">Doc ID</th>
+                                <th class="px-6 py-4 font-semibold">Applicant</th>
+                                <th class="px-6 py-4 font-semibold">Title</th>
+                                <th class="px-6 py-4 font-semibold">Department</th>
+                                <th class="px-6 py-4 font-semibold">Status</th>
+                                <th class="px-6 py-4 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ededed]">
+                            {% for doc in filtered_docs|default:documents %}
+                            <tr class="hover:bg-[#fafafa]">
+                                <td class="px-6 py-4 font-mono text-xs font-semibold">{{ doc.document_id }}</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-semibold text-black">{{ doc.applicant_name }}</p>
+                                    <p class="text-xs text-[#5c5c5c]">{{ doc.applicant_email }}</p>
+                                </td>
+                                <td class="px-6 py-4"><a class="font-semibold text-black hover:text-[#0067c0]" href="{% url 'registry_document_detail' doc.id %}">{{ doc.title|truncatechars:40 }}</a></td>
+                                <td class="px-6 py-4 text-[#424242]">{{ doc.department.name|default:"-" }}</td>
+                                <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-1.5">
+                                        <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#0067c0] hover:bg-[#f7f7f7]" href="{% url 'registry_document_detail' doc.id %}">View</a>
+                                        {% if doc.status == "under_registry_review" or doc.status == "submitted" %}
+                                        <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#c43e1c] hover:bg-[#f7f7f7]" href="{% url 'registry_review' doc.id %}">Review</a>
+                                        {% elif doc.status == "registered" %}
+                                        <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#424242] hover:bg-[#f7f7f7]" href="{% url 'registry_forward' doc.id %}">Forward</a>
+                                        {% elif doc.status == "returned_to_registry" %}
+                                        <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#107c41] hover:bg-[#f7f7f7]" href="{% url 'registry_mark_ready' doc.id %}">Mark Ready</a>
+                                        {% elif doc.status == "ready_for_collection" %}
+                                        <a class="rounded border border-[#c8c8c8] bg-white px-2.5 py-1 text-xs font-semibold text-[#c43e1c] hover:bg-[#f7f7f7]" href="{% url 'registry_mark_collected' doc.id %}">Collect</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="px-6 py-8 text-center text-[#5c5c5c]" colspan="6">No documents in this view.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

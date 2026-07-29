@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 py-8">
+    <a href="{% url 'registry_dashboard' %}" class="mb-4 inline-flex items-center gap-1 text-sm text-[#0067c0] hover:underline">
+        <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to dashboard
+    </a>
+
+    <div class="rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+        <div class="border-b border-[#ededed] px-6 py-4">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-[#0067c0]">{{ doc.document_id }}</p>
+                    <h1 class="mt-1 text-xl font-semibold text-black">Review Document</h1>
+                </div>
+                <span class="rounded-full px-4 py-1.5 text-xs font-semibold {{ doc.status|status_color }}">{{ doc.status|status_label }}</span>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="mb-6 grid gap-6 md:grid-cols-2">
+                <div>
+                    <h2 class="mb-3 text-sm font-semibold text-[#424242]">Applicant Details</h2>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Name</dt>
+                            <dd class="font-medium text-black" id="display_name">{{ doc.applicant_name }}</dd>
+                        </div>
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Email</dt>
+                            <dd class="font-medium text-black" id="display_email">{{ doc.applicant_email }}</dd>
+                        </div>
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Phone</dt>
+                            <dd class="font-medium text-black" id="display_phone">{{ doc.applicant_phone|default:"-" }}</dd>
+                        </div>
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Type</dt>
+                            <dd class="font-medium text-black">{{ doc.get_submission_type_display }}</dd>
+                        </div>
+                    </dl>
+                </div>
+                <div>
+                    <h2 class="mb-3 text-sm font-semibold text-[#424242]">Document Info</h2>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Title</dt>
+                            <dd class="font-medium text-black" id="display_title">{{ doc.title }}</dd>
+                        </div>
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Department</dt>
+                            <dd class="font-medium text-black">{{ doc.department.name|default:"Not set" }}</dd>
+                        </div>
+                        <div class="flex justify-between border-b border-[#f0f0f0] pb-1.5">
+                            <dt class="text-[#5c5c5c]">Priority</dt>
+                            <dd class="font-medium text-black" id="display_priority">{{ doc.get_priority_display }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            {% if doc.description %}
+            <div class="mb-6">
+                <h3 class="mb-1 text-sm font-semibold text-[#424242]">Description</h3>
+                <p class="text-sm text-[#5c5c5c]" id="display_description">{{ doc.description }}</p>
+            </div>
+            {% endif %}
+
+            {% if doc.uploaded_file %}
+            <div class="mb-6 rounded-lg border border-[#e0e0e0] p-4">
+                <h3 class="mb-2 text-sm font-semibold text-[#424242]">Uploaded PDF</h3>
+                <a href="{{ doc.uploaded_file.url }}" target="_blank" class="inline-flex items-center gap-2 rounded-md bg-[#0067c0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005a9e]">
+                    <i data-lucide="external-link" class="h-4 w-4"></i> Open PDF in new tab
+                </a>
+            </div>
+            {% endif %}
+
+            <hr class="my-6">
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <h3 class="text-sm font-semibold text-[#424242]">Edit Details (if needed)</h3>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <input type="text" name="applicant_name" value="{{ doc.applicant_name }}" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Applicant name">
+                    <input type="email" name="applicant_email" value="{{ doc.applicant_email }}" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Email">
+                    <input type="text" name="applicant_phone" value="{{ doc.applicant_phone }}" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Phone">
+                    <input type="text" name="title" value="{{ doc.title }}" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Title">
+                    <textarea name="description" rows="2" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm" placeholder="Description">{{ doc.description }}</textarea>
+                    <select name="department" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm">
+                        <option value="">-- Select Dept --</option>
+                        {% for d in departments %}
+                        <option value="{{ d.id }}" {% if doc.department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="priority" class="rounded-md border border-[#c8c8c8] px-3 py-2 text-sm">
+                        <option value="low" {% if doc.priority == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if doc.priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if doc.priority == 'high' %}selected{% endif %}>High</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="submit" name="action" value="edit" class="rounded-md border border-[#c8c8c8] bg-white px-4 py-2 text-sm font-semibold text-[#424242] hover:bg-[#f7f7f7]">
+                        <i data-lucide="save" class="inline h-4 w-4"></i> Save Edits
+                    </button>
+                </div>
+            </form>
+
+            <hr class="my-6">
+
+            <div class="flex flex-wrap gap-3">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="confirm" class="rounded-md bg-[#0067c0] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#005a9e]">
+                        <i data-lucide="check-circle" class="inline h-4 w-4"></i> Confirm Registration
+                    </button>
+                </form>
+                <a href="{% url 'registry_dashboard' %}" class="rounded-md border border-[#c8c8c8] bg-white px-4 py-2.5 text-sm font-semibold text-[#424242] hover:bg-[#f7f7f7]">
+                    <i data-lucide="x" class="inline h-4 w-4"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

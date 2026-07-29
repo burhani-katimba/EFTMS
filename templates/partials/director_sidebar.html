@@ -1,0 +1,16 @@
+<aside class="hidden w-56 shrink-0 border-r border-[#e0e0e0] bg-white p-4 lg:block">
+    <nav class="flex flex-col gap-1">
+        <a class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold {% if not request.GET.view %}bg-[#0067c0] text-white{% else %}text-[#5c5c5c] hover:bg-[#f7f7f7] hover:text-[#1f1f1f]{% endif %}" href="{% url 'director_dashboard' %}">
+            <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Pending Approvals
+        </a>
+        <a class="flex items-center gap-2 rounded-md px-3 py-2 text-sm {% if request.GET.view == 'approved' %}bg-[#107c41] text-white font-semibold{% else %}text-[#5c5c5c] hover:bg-[#f7f7f7] hover:text-[#1f1f1f]{% endif %}" href="?view=approved">
+            <i data-lucide="check-circle" class="h-4 w-4"></i> Approved
+        </a>
+        <a class="flex items-center gap-2 rounded-md px-3 py-2 text-sm {% if request.GET.view == 'returned' %}bg-[#c43e1c] text-white font-semibold{% else %}text-[#5c5c5c] hover:bg-[#f7f7f7] hover:text-[#1f1f1f]{% endif %}" href="?view=returned">
+            <i data-lucide="rotate-ccw" class="h-4 w-4"></i> Returned
+        </a>
+        <a class="flex items-center gap-2 rounded-md px-3 py-2 text-sm {% if request.GET.view == 'signatures' %}bg-[#0067c0] text-white font-semibold{% else %}text-[#5c5c5c] hover:bg-[#f7f7f7] hover:text-[#1f1f1f]{% endif %}" href="?view=signatures">
+            <i data-lucide="pen-tool" class="h-4 w-4"></i> My Signatures
+        </a>
+    </nav>
+</aside>

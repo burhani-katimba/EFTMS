@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load document_extras %}
+{% load tz %}
+{% block content %}
+<div class="flex h-screen flex-col">
+    {% include "partials/director_header.html" %}
+    <div class="flex min-h-0 flex-1">
+        {% include "partials/director_sidebar.html" %}
+        <section class="min-w-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 lg:px-8">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold text-black">All Pending Approvals</h1>
+                </div>
+                <a class="rounded-md border border-[#c8c8c8] bg-white px-3 py-1.5 text-xs font-semibold text-[#0067c0] hover:bg-[#f7f7f7]" href="{% url 'director_dashboard' %}">Back to Dashboard</a>
+            </div>
+            <section class="overflow-hidden rounded-xl border border-[#e7e7e7] bg-white shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[700px] text-left text-sm">
+                        <thead class="border-b border-[#ededed] text-[#424242]">
+                            <tr><th class="px-6 py-4 font-semibold">Doc ID</th><th class="px-6 py-4 font-semibold">Title</th><th class="px-6 py-4 font-semibold">Applicant</th><th class="px-6 py-4 font-semibold">Department</th><th class="px-6 py-4 font-semibold">Days Waiting</th><th class="px-6 py-4 font-semibold">Actions</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ededed]">
+                            {% for doc in page_obj %}
+                            <tr class="hover:bg-[#fafafa]">
+                                <td class="px-6 py-4 font-mono text-xs">{{ doc.document_id }}</td>
+                                <td class="px-6 py-4 font-semibold text-black">{{ doc.title|truncatechars:40 }}</td>
+                                <td class="px-6 py-4 text-[#424242]">{{ doc.applicant_name }}</td>
+                                <td class="px-6 py-4 text-[#424242]">{{ doc.department.name }}</td>
+                                <td class="px-6 py-4">
+                                    {{ doc.created_at|timesince }}
+                                    {% if doc.created_at|timesince > "2 days" %}<span class="ml-1 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">Urgent</span>{% endif %}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a class="rounded border border-[#c8c8c8] bg-white px-3 py-1.5 text-xs font-semibold text-[#0067c0] hover:bg-[#f7f7f7]" href="{% url 'director_document_detail' doc.id %}">Review & Decide</a>
+                                </td>
+                            </tr>
+                            {% empty %}<tr><td class="px-6 py-8 text-center text-[#5c5c5c]" colspan="6">No pending approvals.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include "partials/pagination.html" %}
+            </section>
+        </section>
+    </div>
+</div>
+{% endblock %}
